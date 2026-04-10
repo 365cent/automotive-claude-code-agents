@@ -43,16 +43,16 @@ After:   claude "Generate FMEA for overcurrent protection in ASIL-D BMS" -> 2 mi
 
 ## Quick Start
 
-```bash
+```powershell
 # 1. Clone the repository
 git clone https://github.com/theja0473/automotive-claude-code-agents.git
 cd automotive-claude-code-agents
 
 # 2. Preview what will be installed (no changes made)
-./install.sh --dry-run
+go run ./cmd/setup --dry-run
 
-# 3. Install into your existing ~/.claude workspace
-./install.sh
+# 3. Install into your existing ~/.codechat workspace
+go run ./cmd/setup
 
 # 4. Start using it immediately
 claude "Help me design an AUTOSAR Adaptive service for camera fusion"
@@ -60,17 +60,38 @@ claude "Help me design an AUTOSAR Adaptive service for camera fusion"
 
 That's it. Your existing Claude Code workspace (settings, agents, hooks) is **never modified**. All automotive content is namespaced with an `automotive-` prefix and tracked in a manifest for clean removal.
 
-```bash
+```powershell
 # Check what's installed
-./install.sh --status
+go run ./cmd/setup --status
 
 # Clean removal (only removes automotive components)
-./install.sh --uninstall
+go run ./cmd/setup --uninstall
 ```
+
+### Windows Binary Setup (Go-based, includes `rg.exe`)
+
+```powershell
+# Build package generator
+go build -o dist/windows-packager.exe ./cmd/windows-installer
+
+# Generate distributable zip (includes rg.exe)
+.\dist\windows-packager.exe --output dist/automotive-codechat-windows.zip --include-rg
+
+# If your network blocks GitHub downloads, pass a local ripgrep zip instead
+.\dist\windows-packager.exe --output dist/automotive-codechat-windows.zip --include-rg --rg-zip C:\temp\ripgrep-14.1.1-x86_64-pc-windows-msvc.zip
+```
+
+Then unzip `dist/automotive-codechat-windows.zip` and run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+This installs into `~/.codechat` and includes `~/.codechat/bin/rg.exe`.
 
 ### Verify Installation
 
-```bash
+```powershell
 # Use an automotive agent
 claude "Using automotive-adas-perception-engineer, design a LiDAR point cloud pipeline"
 
@@ -88,7 +109,7 @@ claude "Review this C function for ISO 26262 ASIL-D compliance"
 
 ## What's Inside
 
-| Component | Count | Location (`~/.claude/`) | Description |
+| Component | Count | Location (`~/.codechat/`) | Description |
 |-----------|------:|------------------------|-------------|
 | **Skills** | 75+ categories | `skills/automotive-*/` | Deep domain knowledge with implementation patterns |
 | **Agents** | 39 | `agents/automotive-*.md` | Specialized AI personas (safety engineer, ADAS architect...) |
@@ -102,7 +123,7 @@ claude "Review this C function for ISO 26262 ASIL-D compliance"
 
 ```
 Your Existing Workspace          +  Automotive Extension
-~/.claude/                       |
+~/.codechat/                       |
   settings.json     (untouched)  |
   agents/my-agent.md (untouched) |  agents/automotive-adas-*.md  (added)
   rules/my-rules.md  (untouched) |  rules/automotive-misra-*.md  (added)
@@ -167,14 +188,14 @@ automotive-claude-code-agents/
 
 ## Optional: Settings Integration
 
-The installer generates `~/.claude/automotive-settings-snippet.json` with recommended hooks for MISRA checking, safety review prompts, and secret scanning. To activate:
+The installer generates `~/.codechat/automotive-settings-snippet.json` with recommended hooks for MISRA checking, safety review prompts, and secret scanning. To activate:
 
-```bash
+```powershell
 # Option 1: Let Claude merge it for you
 claude "Merge automotive-settings-snippet.json into my settings.json"
 
 # Option 2: Review and manually copy desired hooks
-cat ~/.claude/automotive-settings-snippet.json
+cat ~/.codechat/automotive-settings-snippet.json
 ```
 
 This step is entirely optional. All skills, agents, and commands work without it.
@@ -183,7 +204,7 @@ This step is entirely optional. All skills, agents, and commands work without it
 
 ## Build & Test
 
-```bash
+```powershell
 # Run all tests
 pytest tests/ -v
 

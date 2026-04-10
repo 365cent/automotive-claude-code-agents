@@ -1,14 +1,14 @@
 # Automotive Claude Code Agents
 
-Automotive software development extension for Claude Code. Appends to your existing ~/.claude workspace without replacing anything.
+Automotive software development extension for Claude Code. Appends to your existing ~/.codechat workspace without replacing anything.
 
 ## Installation (Append-Safe)
 
-```bash
+```powershell
 # Preview what will be installed (no changes made)
 ./install.sh --dry-run
 
-# Append automotive content to your existing ~/.claude workspace
+# Append automotive content to your existing ~/.codechat workspace
 ./install.sh
 
 # Or install to a specific project
@@ -67,7 +67,7 @@ ASPICE, MISRA C/C++, SAE J1979, IEEE 802.11p, 3GPP C-V2X, CAN/LIN/FlexRay
 
 ## Build & Test
 
-```bash
+```powershell
 pytest tests/ -v
 python -m pytest tests/test_skills.py
 python -m pytest tests/test_agents.py
@@ -76,16 +76,16 @@ ruff check tools/ scripts/
 
 ## How It Integrates
 
-After `./install.sh`, your ~/.claude workspace gets:
+After `./install.sh`, your ~/.codechat workspace gets:
 
 | What | Where | Format |
 |------|-------|--------|
-| Agents | `~/.claude/agents/automotive-*.md` | Claude Code .md frontmatter |
-| Commands | `~/.claude/commands/automotive/` | Slash commands via `/automotive` |
-| Skills | `~/.claude/skills/automotive-*/` | SKILL.md + content symlinks |
-| Rules | `~/.claude/rules/automotive-*.md` | Symlinks to rule .md files |
-| Hooks | `~/.claude/hooks/automotive-*.sh` | Symlinks to hook scripts |
-| Knowledge | `~/.claude/knowledge-base/automotive` | Symlink to KB directory |
-| Workflows | `~/.claude/automotive-workflows` | Symlink to workflows |
+| Agents | `~/.codechat/agents/automotive-*.md` | Claude Code .md frontmatter |
+| Commands | `~/.codechat/commands/automotive/` | Slash commands via `/automotive` |
+| Skills | `~/.codechat/skills/automotive-*/` | SKILL.md + content symlinks |
+| Rules | `~/.codechat/rules/automotive-*.md` | Symlinks to rule .md files |
+| Hooks | `~/.codechat/hooks/automotive-*.sh` | Symlinks to hook scripts |
+| Knowledge | `~/.codechat/knowledge-base/automotive` | Symlink to KB directory |
+| Workflows | `~/.codechat/automotive-workflows` | Symlink to workflows |
 
 Your existing content is never modified. Everything automotive-prefixed.
