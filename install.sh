@@ -14,15 +14,15 @@ set -euo pipefail
 #   - Clean uninstall removes only what was installed
 #
 # Usage:
-#   ./install.sh                          # Install to ~/.claude (append-safe)
-#   ./install.sh --project /path/to/proj  # Install to project .claude/
+#   ./install.sh                          # Install to ~/.codechat (append-safe)
+#   ./install.sh --project /path/to/proj  # Install to project .codechat/
 #   ./install.sh --dry-run                # Preview without changes
 #   ./install.sh --uninstall              # Remove only automotive components
 #   ./install.sh --status                 # Show what's currently installed
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET_DIR="${HOME}/.claude"
+TARGET_DIR="${HOME}/.codechat"
 DRY_RUN=false
 UNINSTALL=false
 STATUS_ONLY=false
@@ -53,7 +53,7 @@ Append automotive Claude Code agents into an existing workspace.
 This installer NEVER replaces your existing settings, agents, or hooks.
 
 Options:
-  --project DIR    Install to project-specific .claude/ directory
+  --project DIR    Install to project-specific .codechat/ directory
   --dry-run        Preview what would be installed without making changes
   --uninstall      Remove only automotive-prefixed components
   --status         Show what automotive components are currently installed
@@ -67,7 +67,7 @@ Safety guarantees:
   - Backup created before any changes
 
 Examples:
-  $(basename "$0")                              # Append to ~/.claude
+  $(basename "$0")                              # Append to ~/.codechat
   $(basename "$0") --project ~/my-ecu-project   # Project-specific install
   $(basename "$0") --dry-run                    # Preview only
   $(basename "$0") --uninstall                  # Remove automotive content
@@ -108,7 +108,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -n "$PROJECT_DIR" ]]; then
-    TARGET_DIR="${PROJECT_DIR}/.claude"
+    TARGET_DIR="${PROJECT_DIR}/.codechat"
 fi
 
 MANIFEST_FILE="${TARGET_DIR}/.automotive-manifest"
@@ -297,7 +297,7 @@ install_agents() {
 
         if [[ -e "$dest_path" ]] && [[ ! -L "$dest_path" ]]; then
             # Check if it's ours (contains automotive marker)
-            if ! grep -q "# automotive-claude-code-agents" "$dest_path" 2>/dev/null; then
+            if ! rg -q "# automotive-claude-code-agents" "$dest_path" 2>/dev/null; then
                 (( SKIPPED_COUNT++ )) || true
                 continue
             fi
@@ -305,14 +305,14 @@ install_agents() {
 
         # Extract fields from YAML and convert to Claude Code .md format
         local name description role tools_list
-        name=$(grep -m1 '^name:' "$yaml_file" | sed 's/^name:\s*//' | tr -d '"' || echo "$basename_noext")
-        description=$(grep -m1 '^description:' "$yaml_file" | sed 's/^description:\s*//' | tr -d '"' || echo "Automotive ${category} agent")
+        name=$(rg -m1 '^name:' "$yaml_file" | sed 's/^name:\s*//' | tr -d '"' || echo "$basename_noext")
+        description=$(rg -m1 '^description:' "$yaml_file" | sed 's/^description:\s*//' | tr -d '"' || echo "Automotive ${category} agent")
 
         # Extract role/system_prompt content (multiline)
         role=$(awk '/^(role|system_prompt):\s*\|/{found=1; next} found && /^[^ ]/{found=0} found{print}' "$yaml_file" | head -50)
 
         # Default tools for automotive agents
-        tools_list="Read, Grep, Glob, Bash"
+        tools_list="Read, Grep, Glob, PowerShell"
 
         cat > "$dest_path" <<AGENT_MD
 ---
@@ -369,7 +369,7 @@ install_commands() {
         fi
 
         if [[ -e "$dest_path" ]] && [[ ! -L "$dest_path" ]]; then
-            if ! grep -q "# automotive-claude-code-agents" "$dest_path" 2>/dev/null; then
+            if ! rg -q "# automotive-claude-code-agents" "$dest_path" 2>/dev/null; then
                 (( SKIPPED_COUNT++ )) || true
                 continue
             fi
@@ -377,7 +377,7 @@ install_commands() {
 
         # Extract description from script header comment
         local script_desc
-        script_desc=$(grep -m1 '^#.*—' "$sh_file" | sed 's/^#\s*//' || echo "Automotive ${category} command: ${basename_noext}")
+        script_desc=$(rg -m1 '^#.*—' "$sh_file" | sed 's/^#\s*//' || echo "Automotive ${category} command: ${basename_noext}")
 
         cat > "$dest_path" <<CMD_MD
 ---
@@ -389,8 +389,8 @@ description: "${script_desc}"
 
 Run the automotive ${category} ${basename_noext} tool.
 
-\`\`\`bash
-bash "${sh_file}"
+\`\`\`powershell
+powershell -File "${sh_file}"
 \`\`\`
 
 This command is part of the automotive-claude-code-agents extension.
@@ -449,7 +449,7 @@ description: |
   ${category} systems, standards, and best practices for automotive development.
   Part of automotive-claude-code-agents extension.
   TRIGGER: When working on automotive ${category} topics.
-allowed-tools: Read, Grep, Glob, Bash
+allowed-tools: Read, Grep, Glob, PowerShell
 # automotive-claude-code-agents — installed by install.sh (safe to delete)
 ---
 
@@ -465,7 +465,7 @@ Total skill files: ${skill_count}
 ## Usage
 
 Reference the skill files for detailed domain knowledge:
-\`\`\`bash
+\`\`\`powershell
 ls ${category_dir}
 \`\`\`
 
@@ -572,7 +572,7 @@ install_workflows() {
         return
     fi
 
-    # Workflows go into a namespaced directory under .claude
+    # Workflows go into a namespaced directory under .codechat
     local dest_path="${dest_dir}/${NAMESPACE}-workflows"
     mkdir -p "$(dirname "$dest_path")"
     info "Installing workflows → ${dest_path}"
@@ -607,17 +607,17 @@ generate_settings_snippet() {
   "_instructions": [
     "This file is NOT automatically applied to your settings.json.",
     "To enable automotive hooks, MANUALLY merge the entries below into",
-    "your existing ~/.claude/settings.json under the appropriate sections.",
+    "your existing ~/.codechat/settings.json under the appropriate sections.",
     "Or run: claude /update-config to have Claude help you merge it."
   ],
   "hooks_to_add": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "PowerShell",
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/automotive-pre-commit-misra-check.sh",
+            "command": "powershell -File ~/.codechat/hooks/automotive-pre-commit-misra-check.sh",
             "timeout": 15
           }
         ]
@@ -627,7 +627,7 @@ generate_settings_snippet() {
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/automotive-pre-commit-safety-annotation.sh",
+            "command": "powershell -File ~/.codechat/hooks/automotive-pre-commit-safety-annotation.sh",
             "timeout": 15
           }
         ]
@@ -639,7 +639,7 @@ generate_settings_snippet() {
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/automotive-pre-commit-autosar-naming.sh",
+            "command": "powershell -File ~/.codechat/hooks/automotive-pre-commit-autosar-naming.sh",
             "timeout": 10
           }
         ]
@@ -648,9 +648,9 @@ generate_settings_snippet() {
   },
   "permissions_to_add": {
     "allow": [
-      "Bash(python-can:*)",
-      "Bash(cantools:*)",
-      "Bash(cppcheck:*)"
+      "PowerShell(python-can:*)",
+      "PowerShell(cantools:*)",
+      "PowerShell(cppcheck:*)"
     ]
   }
 }
