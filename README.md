@@ -49,10 +49,10 @@ git clone https://github.com/theja0473/automotive-claude-code-agents.git
 cd automotive-claude-code-agents
 
 # 2. Preview what will be installed (no changes made)
-./install.sh --dry-run
+go run ./cmd/setup --dry-run
 
 # 3. Install into your existing ~/.codechat workspace
-./install.sh
+go run ./cmd/setup
 
 # 4. Start using it immediately
 claude "Help me design an AUTOSAR Adaptive service for camera fusion"
@@ -62,10 +62,10 @@ That's it. Your existing Claude Code workspace (settings, agents, hooks) is **ne
 
 ```powershell
 # Check what's installed
-./install.sh --status
+go run ./cmd/setup --status
 
 # Clean removal (only removes automotive components)
-./install.sh --uninstall
+go run ./cmd/setup --uninstall
 ```
 
 ### Windows Binary Setup (Go-based, includes `rg.exe`)
